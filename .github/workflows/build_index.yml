@@ -4,7 +4,8 @@ on:
   push:
     paths:
       - 'packages/**' # Trigger only when packages directory changes
-
+    workflow_dispatch:
+      
 jobs:
   build:
     runs-on: ubuntu-latest
