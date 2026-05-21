@@ -4,8 +4,8 @@ on:
   push:
     paths:
       - 'packages/**' # Trigger only when packages directory changes
-    workflow_dispatch:
-      
+  workflow_dispatch: # 这一行就是手动触发按钮的配置
+
 jobs:
   build:
     runs-on: ubuntu-latest
