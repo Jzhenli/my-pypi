@@ -1,0 +1,69 @@
+name: Generate PyPI Index
+
+on:
+  push:
+    paths:
+      - 'packages/**'  # Only trigger when packages directory changes
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Generate PEP 503 Index
+        run: |
+          import os
+          import hashlib
+
+          base_dir = "packages"
+          # Generate root index
+          root_index = "<!DOCTYPE html><html><body>\n"
+          
+          for pkg_name in sorted(os.listdir(base_dir)):
+              pkg_path = os.path.join(base_dir, pkg_name)
+              if not os.path.isdir(pkg_path):
+                  continue
+                  
+              root_index += f'<a href="{pkg_name}/">{pkg_name}</a>\n'
+              
+              # Generate package index
+              pkg_index = "<!DOCTYPE html><html><body>\n"
+              for whl_file in sorted(os.listdir(pkg_path)):
+                  if not whl_file.endswith(".whl"):
+                      continue
+                  
+                  # Calculate sha256 checksum for safer pip installation
+                  with open(os.path.join(pkg_path, whl_file), "rb") as f:
+                      sha256 = hashlib.sha256(f.read()).hexdigest()
+                  
+                  # PEP 503 standard link format, must include #sha256=...
+                  pkg_index += f'<a href="../../{pkg_path}/{whl_file}#sha256={sha256}">{whl_file}</a>\n'
+              
+              pkg_index += "</body></html>"
+              
+              # Write package index.html
+              with open(os.path.join(pkg_path, "index.html"), "w") as f:
+                  f.write(pkg_index)
+                  
+          root_index += "</body></html>"
+          
+          # Write root index.html
+          with open(os.path.join(base_dir, "index.html"), "w") as f:
+              f.write(root_index)
+              
+          print("Index generated successfully!")
+        working-directory: ${{ github.workspace }}
+
+      - name: Commit and Push Index
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add packages/*/index.html packages/index.html
+          git diff --staged --quiet || git commit -m "Auto-update PEP 503 index"
+          git push
