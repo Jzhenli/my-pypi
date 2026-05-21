@@ -25,20 +25,23 @@ jobs:
           python3 << 'EOF'
           import os
           import hashlib
+          import re
+
+          def normalize(name):
+              return re.sub(r"[-_.]+", "-", name).lower()
 
           base_dir = "docs"
           
-          # Generate root index
           root_index = "<!DOCTYPE html>\n<html>\n  <body>\n"
           
           for pkg_name in sorted(os.listdir(base_dir)):
               pkg_path = os.path.join(base_dir, pkg_name)
               if not os.path.isdir(pkg_path):
                   continue
-                  
-              root_index += f'    <a href="{pkg_name}/">{pkg_name}</a><br>\n'
               
-              # Generate package index
+              normalized_name = normalize(pkg_name)
+              root_index += f'    <a href="{normalized_name}/">{normalized_name}</a><br>\n'
+              
               pkg_index = "<!DOCTYPE html>\n<html>\n  <body>\n"
               for whl_file in sorted(os.listdir(pkg_path)):
                   if not whl_file.endswith(".whl"):
