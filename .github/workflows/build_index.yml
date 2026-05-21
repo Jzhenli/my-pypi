@@ -36,7 +36,7 @@ jobs:
               if not os.path.isdir(pkg_path):
                   continue
                   
-              root_index += f'    <a href="{pkg_name}/">{pkg_name}</a>\n'
+              root_index += f'    <a href="{pkg_name}/">{pkg_name}</a><br>\n'
               
               # Generate package index
               pkg_index = "<!DOCTYPE html>\n<html>\n  <body>\n"
@@ -48,7 +48,7 @@ jobs:
                   with open(file_full_path, "rb") as f:
                       sha256 = hashlib.sha256(f.read()).hexdigest()
                   
-                  pkg_index += f'    <a href="{whl_file}#sha256={sha256}">{whl_file}</a>\n'
+                  pkg_index += f'    <a href="{whl_file}#sha256={sha256}">{whl_file}</a><br>\n'
               
               pkg_index += "  </body>\n</html>"
               
