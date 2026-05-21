@@ -3,7 +3,7 @@ name: Generate PyPI Index
 on:
   push:
     paths:
-      - 'packages/**'  # Only trigger when packages directory changes
+      - 'packages/**' # Trigger only when packages directory changes
 
 jobs:
   build:
@@ -18,10 +18,12 @@ jobs:
 
       - name: Generate PEP 503 Index
         run: |
+          python3 << 'EOF'
           import os
           import hashlib
 
           base_dir = "packages"
+          
           # Generate root index
           root_index = "<!DOCTYPE html><html><body>\n"
           
@@ -38,12 +40,13 @@ jobs:
                   if not whl_file.endswith(".whl"):
                       continue
                   
-                  # Calculate sha256 checksum for safer pip installation
-                  with open(os.path.join(pkg_path, whl_file), "rb") as f:
+                  # Calculate sha256 hash for pip integrity check
+                  file_full_path = os.path.join(pkg_path, whl_file)
+                  with open(file_full_path, "rb") as f:
                       sha256 = hashlib.sha256(f.read()).hexdigest()
                   
-                  # PEP 503 standard link format, must include #sha256=...
-                  pkg_index += f'<a href="../../{pkg_path}/{whl_file}#sha256={sha256}">{whl_file}</a>\n'
+                  # Use relative filename since index.html and whl are in the same directory
+                  pkg_index += f'<a href="{whl_file}#sha256={sha256}">{whl_file}</a>\n'
               
               pkg_index += "</body></html>"
               
@@ -58,7 +61,7 @@ jobs:
               f.write(root_index)
               
           print("Index generated successfully!")
-        working-directory: ${{ github.workspace }}
+          EOF
 
       - name: Commit and Push Index
         run: |
