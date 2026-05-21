@@ -3,12 +3,15 @@ name: Generate PyPI Index
 on:
   push:
     paths:
-      - 'packages/**' # Trigger only when packages directory changes
-  workflow_dispatch: # 这一行就是手动触发按钮的配置
+      - 'docs/**' # Trigger only when docs directory changes
+  workflow_dispatch: 
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # Ensure we have push permission
+
     steps:
       - uses: actions/checkout@v4
 
@@ -23,7 +26,7 @@ jobs:
           import os
           import hashlib
 
-          base_dir = "packages"
+          base_dir = "docs" # Changed from packages to docs
           
           # Generate root index
           root_index = "<!DOCTYPE html><html><body>\n"
@@ -68,6 +71,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add packages/*/index.html packages/index.html
+          git add docs/*/index.html docs/index.html
           git diff --staged --quiet || git commit -m "Auto-update PEP 503 index"
           git push
